@@ -149,31 +149,32 @@ impl TexturedQuad {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: None,
             entries: &[
-                // wgpu::BindGroupLayoutEntry {
-                //     binding: 0,
-                //     visibility: wgpu::ShaderStage::VERTEX,
-                //     ty: wgpu::BindingType::UniformBuffer {
-                //         dynamic: false,
-                //         min_binding_size: wgpu::BufferSize::new(64), // Size of a 4x4 f32 matrix
-                //     },
-                //     count: None,
-                // },
-                // wgpu::BindGroupLayoutEntry {
-                //     binding: 1,
-                //     visibility: wgpu::ShaderStage::FRAGMENT,
-                //     ty: wgpu::BindingType::SampledTexture {
-                //         multisampled: false,
-                //         component_type: wgpu::TextureComponentType::Float,
-                //         dimension: wgpu::TextureViewDimension::D2,
-                //     },
-                //     count: None,
-                // },
-                // wgpu::BindGroupLayoutEntry {
-                //     binding: 2,
-                //     visibility: wgpu::ShaderStage::FRAGMENT,
-                //     ty: wgpu::BindingType::Sampler { comparison: false },
-                //     count: None,
-                // },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStage::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: wgpu::BufferSize::new(64), // Size of a 4x4 f32 matrix
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: false },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler { filtering: false, comparison: false },
+                    count: None,
+                },
             ],
         });
 

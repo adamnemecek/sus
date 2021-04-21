@@ -592,11 +592,64 @@ mod gpu {
                 label: None,
             });
 
-            let vertex_state = wgpu::VertexStateDescriptor {
-                index_format: wgpu::IndexFormat::Uint16,
-                vertex_buffers: &[
-                    wgpu::VertexBuffer {
-                        stride: (std::mem::size_of::<GlyphQuadVertex>()) as wgpu::BufferAddress,
+            // let vertex_state = wgpu::VertexBufferLayout {
+            //     // index_format: wgpu::IndexFormat::Uint16,
+            //     // vertex_buffers: &[
+            //         // wgpu::VertexBuffer {
+            //     array_stride: (std::mem::size_of::<GlyphQuadVertex>()) as wgpu::BufferAddress,
+            //     step_mode: wgpu::InputStepMode::Instance,
+            //     attributes: &[
+            //         // UV (vec2)
+            //         wgpu::VertexAttribute {
+            //             format: wgpu::VertexFormat::Float2,
+            //             offset: 0,
+            //             shader_location: 0,
+            //         },
+            //     ],
+            //         // },
+            //         wgpu::VertexBufferDescriptor {
+            //             stride: (std::mem::size_of::<GlyphInstanceData>()) as wgpu::BufferAddress,
+            //             step_mode: wgpu::InputStepMode::Instance,
+            //             // attributes: &[
+            //             //     // pos (vec2)
+            //             //     wgpu::VertexAttribute {
+            //             //         format: wgpu::VertexFormat::Float2,
+            //             //         offset: 0,
+            //             //         shader_location: 1,
+            //             //     },
+            //             //     // size (vec2)
+            //             //     wgpu::VertexAttribute {
+            //             //         format: wgpu::VertexFormat::Float2,
+            //             //         offset: 2 * 4,
+            //             //         shader_location: 2,
+            //             //     },
+            //             //     // uv_extents (vec4)
+            //             //     wgpu::VertexAttribute {
+            //             //         format: wgpu::VertexFormat::Float4,
+            //             //         offset: (2 * 4) + (2 * 4),
+            //             //         shader_location: 3,
+            //             //     },
+            //             //     // color (vec4)
+            //             //     wgpu::VertexAttribute {
+            //             //         format: wgpu::VertexFormat::Float4,
+            //             //         offset: (2 * 4) + (2 * 4) + (4 * 4),
+            //             //         shader_location: 4,
+            //             //     },
+            //             // ],
+            //             attributes: wgpu::vertex_attr_array![
+            //                 0 => Float2,
+            //                 1 => Float2,
+            //                 2 => Float4,
+            //                 3 => Float4,
+            //             ]
+            //         },
+            //     ],
+            // };
+
+            // index_format: wgpu::IndexFormat::Uint16,
+            let vertex_state = &[
+                    wgpu::VertexBufferLayout {
+                        array_stride: (std::mem::size_of::<GlyphQuadVertex>()) as wgpu::BufferAddress,
                         step_mode: wgpu::InputStepMode::Vertex,
                         attributes: &[
                             // UV (vec2)
@@ -607,8 +660,8 @@ mod gpu {
                             },
                         ],
                     },
-                    wgpu::VertexBufferDescriptor {
-                        stride: (std::mem::size_of::<GlyphInstanceData>()) as wgpu::BufferAddress,
+                    wgpu::VertexBufferLayout {
+                        array_stride: (std::mem::size_of::<GlyphInstanceData>()) as wgpu::BufferAddress,
                         step_mode: wgpu::InputStepMode::Instance,
                         attributes: &[
                             // pos (vec2)
@@ -637,8 +690,7 @@ mod gpu {
                             },
                         ],
                     },
-                ],
-            };
+                ];
 
             let vs_module = device.create_shader_module(&wgpu::include_spirv!(
                 "../../../resources/shaders/glyph.vert.spv"
@@ -735,6 +787,7 @@ mod gpu {
             let encoder = &mut frame_encoder.encoder;
 
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                     attachment: &frame.view,
                     resolve_target: None,
