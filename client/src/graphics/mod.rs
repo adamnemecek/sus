@@ -40,9 +40,10 @@ impl GraphicsDevice {
         let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
+                    label: None,
                     features: wgpu::Features::empty(),
                     limits: wgpu::Limits::default(),
-                    shader_validation: true,
+                    // shader_validation: true,
                 },
                 None,
             )
@@ -208,6 +209,7 @@ impl TexturedQuad {
             array_stride: (std::mem::size_of::<TexturedQuadVertex>()) as wgpu::BufferAddress,
             step_mode: wgpu::InputStepMode::Vertex,
             attributes: &wgpu::vertex_attr_array![
+                // UV (vec2)
                 0 => Float2,
                 1 => Float2
             ]
@@ -240,6 +242,7 @@ impl TexturedQuad {
             "../../../resources/shaders/test.frag.spv"
         ));
 
+        let format = wgpu::TextureFormat::R8Unorm;
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
@@ -251,9 +254,7 @@ impl TexturedQuad {
             fragment: Some(wgpu::FragmentState {
                 module: &fs_module,
                 entry_point: "main",
-                targets: &[
-                    /*/ todo */
-                ],
+                targets: &[/*/ todo */ format.into()],
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleStrip,

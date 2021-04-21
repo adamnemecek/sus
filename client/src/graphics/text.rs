@@ -578,7 +578,11 @@ mod gpu {
                         binding: 0,
                         // TODO - Replace with this snippet when available.
                         // resource: uniform_buffer.as_entire_binding(),
-                        resource: wgpu::BindingResource::Buffer(uniform_buffer.slice(..)),
+                        resource: wgpu::BindingResource::Buffer {
+                            buffer: &uniform_buffer,
+                            offset: 0,
+                            size: wgpu::BufferSize::new(16),
+                        },
                     },
                     wgpu::BindGroupEntry {
                         binding: 1,
@@ -647,50 +651,50 @@ mod gpu {
             // };
 
             // index_format: wgpu::IndexFormat::Uint16,
-            let vertex_state = &[
-                    wgpu::VertexBufferLayout {
-                        array_stride: (std::mem::size_of::<GlyphQuadVertex>()) as wgpu::BufferAddress,
-                        step_mode: wgpu::InputStepMode::Vertex,
-                        attributes: &[
-                            // UV (vec2)
-                            wgpu::VertexAttribute {
-                                format: wgpu::VertexFormat::Float2,
-                                offset: 0,
-                                shader_location: 0,
-                            },
-                        ],
-                    },
-                    wgpu::VertexBufferLayout {
-                        array_stride: (std::mem::size_of::<GlyphInstanceData>()) as wgpu::BufferAddress,
-                        step_mode: wgpu::InputStepMode::Instance,
-                        attributes: &[
-                            // pos (vec2)
-                            wgpu::VertexAttribute {
-                                format: wgpu::VertexFormat::Float2,
-                                offset: 0,
-                                shader_location: 1,
-                            },
-                            // size (vec2)
-                            wgpu::VertexAttribute {
-                                format: wgpu::VertexFormat::Float2,
-                                offset: 2 * 4,
-                                shader_location: 2,
-                            },
-                            // uv_extents (vec4)
-                            wgpu::VertexAttribute {
-                                format: wgpu::VertexFormat::Float4,
-                                offset: (2 * 4) + (2 * 4),
-                                shader_location: 3,
-                            },
-                            // color (vec4)
-                            wgpu::VertexAttribute {
-                                format: wgpu::VertexFormat::Float4,
-                                offset: (2 * 4) + (2 * 4) + (4 * 4),
-                                shader_location: 4,
-                            },
-                        ],
-                    },
-                ];
+            let vertex_buffers = &[
+                wgpu::VertexBufferLayout {
+                    array_stride: (std::mem::size_of::<GlyphQuadVertex>()) as wgpu::BufferAddress,
+                    step_mode: wgpu::InputStepMode::Vertex,
+                    attributes: &[
+                        // UV (vec2)
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float2,
+                            offset: 0,
+                            shader_location: 0,
+                        },
+                    ],
+                },
+                wgpu::VertexBufferLayout {
+                    array_stride: (std::mem::size_of::<GlyphInstanceData>()) as wgpu::BufferAddress,
+                    step_mode: wgpu::InputStepMode::Instance,
+                    attributes: &[
+                        // pos (vec2)
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float2,
+                            offset: 0,
+                            shader_location: 1,
+                        },
+                        // size (vec2)
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float2,
+                            offset: 2 * 4,
+                            shader_location: 2,
+                        },
+                        // uv_extents (vec4)
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float4,
+                            offset: (2 * 4) + (2 * 4),
+                            shader_location: 3,
+                        },
+                        // color (vec4)
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float4,
+                            offset: (2 * 4) + (2 * 4) + (4 * 4),
+                            shader_location: 4,
+                        },
+                    ],
+                },
+            ];
 
             let vs_module = device.create_shader_module(&wgpu::include_spirv!(
                 "../../../resources/shaders/glyph.vert.spv"
@@ -699,43 +703,54 @@ mod gpu {
                 "../../../resources/shaders/glyph.frag.spv"
             ));
 
+            let format = wgpu::TextureFormat::R8Unorm;
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: None,
                 layout: Some(&pipeline_layout),
-                vertex_stage: wgpu::ProgrammableStageDescriptor {
+                vertex: wgpu::VertexState {
                     module: &vs_module,
                     entry_point: "main",
+                    buffers: vertex_buffers,
                 },
-                fragment_stage: Some(wgpu::FragmentState {
+                fragment: Some(wgpu::FragmentState {
                     module: &fs_module,
                     entry_point: "main",
                     targets: &[format.into()],
                 }),
-                rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::TriangleStrip,
                     front_face: wgpu::FrontFace::Ccw,
                     cull_mode: wgpu::CullMode::Front,
                     ..Default::default()
-                }),
-                primitive_topology: wgpu::PrimitiveTopology::TriangleStrip,
-                color_states: &[wgpu::ColorStateDescriptor {
-                    format: graphics_device.swap_chain_descriptor().format,
-                    color_blend: wgpu::BlendDescriptor {
-                        src_factor: wgpu::BlendFactor::SrcAlpha,
-                        dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
-                        operation: wgpu::BlendOperation::Add,
-                    },
-                    alpha_blend: wgpu::BlendDescriptor {
-                        src_factor: wgpu::BlendFactor::SrcAlpha,
-                        dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
-                        operation: wgpu::BlendOperation::Add,
-                    },
-                    write_mask: wgpu::ColorWrite::ALL,
-                }],
-                depth_stencil_state: None,
-                vertex_state,
-                sample_count: 1,
-                sample_mask: !0,
-                alpha_to_coverage_enabled: false,
+                },
+
+                depth_stencil: None,
+                multisample: wgpu::MultisampleState::default(),
+                // rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+                //     front_face: wgpu::FrontFace::Ccw,
+                //     cull_mode: wgpu::CullMode::Front,
+                //     ..Default::default()
+                // }),
+                // primitive_topology: wgpu::PrimitiveTopology::TriangleStrip,
+                // color_states: &[wgpu::ColorStateDescriptor {
+                //     format: graphics_device.swap_chain_descriptor().format,
+                //     color_blend: wgpu::BlendDescriptor {
+                //         src_factor: wgpu::BlendFactor::SrcAlpha,
+                //         dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
+                //         operation: wgpu::BlendOperation::Add,
+                //     },
+                //     alpha_blend: wgpu::BlendDescriptor {
+                //         src_factor: wgpu::BlendFactor::SrcAlpha,
+                //         dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
+                //         operation: wgpu::BlendOperation::Add,
+                //     },
+                //     write_mask: wgpu::ColorWrite::ALL,
+                // }],
+                // depth_stencil_state: None,
+                // vertex_state,
+                // sample_count: 1,
+                // sample_mask: !0,
+                // alpha_to_coverage_enabled: false,
             });
 
             Self {
