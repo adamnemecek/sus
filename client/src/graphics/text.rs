@@ -548,10 +548,7 @@ mod gpu {
                         wgpu::BindGroupLayoutEntry {
                             binding: 2,
                             visibility: wgpu::ShaderStage::FRAGMENT,
-                            ty: wgpu::BindingType::Sampler {
-                                filtering: false,
-                                comparison: false,
-                            },
+                            ty: wgpu::BindingType::Sampler { filtering: false, comparison: false },
                             count: None,
                         },
                     ],
@@ -660,9 +657,7 @@ mod gpu {
                 fragment_stage: Some(wgpu::FragmentState {
                     module: &fs_module,
                     entry_point: "main",
-                    targets: &[
-                        format.into()
-                    ]
+                    targets: &[format.into()],
                 }),
                 rasterization_state: Some(wgpu::RasterizationStateDescriptor {
                     front_face: wgpu::FrontFace::Ccw,

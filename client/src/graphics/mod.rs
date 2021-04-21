@@ -202,62 +202,85 @@ impl TexturedQuad {
             label: None,
         });
 
-        let vertex_state = wgpu::VertexStateDescriptor {
+        let buffer_layout = wgpu::VertexBufferLayout {
             // index_format: wgpu::IndexFormat::Uint16,
-            vertex_buffers: &[wgpu::VertexBuffer {
-                stride: (std::mem::size_of::<TexturedQuadVertex>()) as wgpu::BufferAddress,
-                step_mode: wgpu::InputStepMode::Vertex,
-                attributes: &[
-                    // Pos (vec2)
-                    wgpu::VertexAttribute {
-                        format: wgpu::VertexFormat::Float2,
-                        offset: 0,
-                        shader_location: 0,
-                    },
-                    // UV (vec2)
-                    wgpu::VertexAttribute {
-                        format: wgpu::VertexFormat::Float2,
-                        offset: 2 * 4,
-                        shader_location: 1,
-                    },
-                ],
-            }],
+            array_stride: (std::mem::size_of::<TexturedQuadVertex>()) as wgpu::BufferAddress,
+            step_mode: wgpu::InputStepMode::Vertex,
+            attributes: &wgpu::vertex_attr_array![
+                0 => Float2,
+                1 => Float2
+            ]
+            // attributes: &[wgpu::VertexBuffer {
+            //     attributes: &[
+            //         // Pos (vec2)
+            //         // wgpu::VertexAttribute {
+            //         //     format: wgpu::VertexFormat::Float2,
+            //         //     offset: 0,
+            //         //     shader_location: 0,
+            //         // },
+            //         // // UV (vec2)
+            //         // wgpu::VertexAttribute {
+            //         //     format: wgpu::VertexFormat::Float2,
+            //         //     offset: 2 * 4,
+            //         //     shader_location: 1,
+            //         // },
+            //         wgpu::vertex_attr_array![
+            //             0 => Float2,
+            //             1 => Float2
+            //         ]
+            //     ],
+            // }],
         };
 
-
-        let vs_module = device
-            .create_shader_module(&wgpu::include_spirv!("../../../resources/shaders/test.vert.spv"));
-        let fs_module = device
-            .create_shader_module(&wgpu::include_spirv!("../../../resources/shaders/test.frag.spv"));
+        let vs_module = device.create_shader_module(&wgpu::include_spirv!(
+            "../../../resources/shaders/test.vert.spv"
+        ));
+        let fs_module = device.create_shader_module(&wgpu::include_spirv!(
+            "../../../resources/shaders/test.frag.spv"
+        ));
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            vertex_stage: wgpu::ProgrammableStageDescriptor {
+            vertex: wgpu::VertexState {
                 module: &vs_module,
                 entry_point: "main",
+                buffers: &[buffer_layout],
             },
-            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+            fragment: Some(wgpu::FragmentState {
                 module: &fs_module,
                 entry_point: "main",
+                targets: &[
+                    /*/ todo */
+                ],
             }),
-            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+            primitive: wgpu::PrimitiveState {
+                topology: wgpu::PrimitiveTopology::TriangleStrip,
                 front_face: wgpu::FrontFace::Ccw,
                 cull_mode: wgpu::CullMode::Front,
                 ..Default::default()
-            }),
-            primitive_topology: wgpu::PrimitiveTopology::TriangleStrip,
-            color_states: &[wgpu::ColorStateDescriptor {
-                format: graphics_device.swap_chain_descriptor().format,
-                color_blend: wgpu::BlendDescriptor::REPLACE,
-                alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                write_mask: wgpu::ColorWrite::ALL,
-            }],
-            depth_stencil_state: None,
-            vertex_state,
-            sample_count: 1,
-            sample_mask: !0,
-            alpha_to_coverage_enabled: false,
+            },
+
+            // todo
+            depth_stencil: None,
+            multisample: wgpu::MultisampleState::default(),
+            // rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+            //     front_face: wgpu::FrontFace::Ccw,
+            //     cull_mode: wgpu::CullMode::Front,
+            //     ..Default::default()
+            // }),
+            // primitive_topology: wgpu::PrimitiveTopology::TriangleStrip,
+            // color_states: &[wgpu::ColorStateDescriptor {
+            //     format: graphics_device.swap_chain_descriptor().format,
+            //     color_blend: wgpu::BlendDescriptor::REPLACE,
+            //     alpha_blend: wgpu::BlendDescriptor::REPLACE,
+            //     write_mask: wgpu::ColorWrite::ALL,
+            // }],
+            // depth_stencil_state: None,
+            // vertex_state,
+            // sample_count: 1,
+            // sample_mask: !0,
+            // alpha_to_coverage_enabled: false,
         });
 
         Self { vertex_buf, index_buf, pipeline, bind_group }
@@ -279,7 +302,7 @@ impl TexturedQuad {
 
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.bind_group, &[]);
-        rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint16,);
+        rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint16);
         rpass.set_vertex_buffer(0, self.vertex_buf.slice(..));
         rpass.draw_indexed(0..4 as u32, 0, 0..1);
     }
