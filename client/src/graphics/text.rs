@@ -528,8 +528,9 @@ mod gpu {
                         wgpu::BindGroupLayoutEntry {
                             binding: 0,
                             visibility: wgpu::ShaderStage::VERTEX,
-                            ty: wgpu::BindingType::UniformBuffer {
-                                dynamic: false,
+                            ty: wgpu::BindingType::Buffer {
+                                ty: wgpu::BufferBindingType::Uniform,
+                                has_dynamic_offset: false,
                                 min_binding_size: wgpu::BufferSize::new(4 * 4 * 4), // Size of a 4x4 f32 matrix
                             },
                             count: None,
@@ -537,17 +538,20 @@ mod gpu {
                         wgpu::BindGroupLayoutEntry {
                             binding: 1,
                             visibility: wgpu::ShaderStage::FRAGMENT,
-                            ty: wgpu::BindingType::SampledTexture {
+                            ty: wgpu::BindingType::Texture {
+                                sample_type: wgpu::TextureSampleType::Float { filterable: false },
+                                view_dimension: wgpu::TextureViewDimension::D2,
                                 multisampled: false,
-                                component_type: wgpu::TextureComponentType::Float,
-                                dimension: wgpu::TextureViewDimension::D2,
                             },
                             count: None,
                         },
                         wgpu::BindGroupLayoutEntry {
                             binding: 2,
                             visibility: wgpu::ShaderStage::FRAGMENT,
-                            ty: wgpu::BindingType::Sampler { comparison: false },
+                            ty: wgpu::BindingType::Sampler {
+                                filtering: false,
+                                comparison: false,
+                            },
                             count: None,
                         },
                     ],
@@ -594,12 +598,12 @@ mod gpu {
             let vertex_state = wgpu::VertexStateDescriptor {
                 index_format: wgpu::IndexFormat::Uint16,
                 vertex_buffers: &[
-                    wgpu::VertexBufferDescriptor {
+                    wgpu::VertexBuffer {
                         stride: (std::mem::size_of::<GlyphQuadVertex>()) as wgpu::BufferAddress,
                         step_mode: wgpu::InputStepMode::Vertex,
                         attributes: &[
                             // UV (vec2)
-                            wgpu::VertexAttributeDescriptor {
+                            wgpu::VertexAttribute {
                                 format: wgpu::VertexFormat::Float2,
                                 offset: 0,
                                 shader_location: 0,
@@ -611,25 +615,25 @@ mod gpu {
                         step_mode: wgpu::InputStepMode::Instance,
                         attributes: &[
                             // pos (vec2)
-                            wgpu::VertexAttributeDescriptor {
+                            wgpu::VertexAttribute {
                                 format: wgpu::VertexFormat::Float2,
                                 offset: 0,
                                 shader_location: 1,
                             },
                             // size (vec2)
-                            wgpu::VertexAttributeDescriptor {
+                            wgpu::VertexAttribute {
                                 format: wgpu::VertexFormat::Float2,
                                 offset: 2 * 4,
                                 shader_location: 2,
                             },
                             // uv_extents (vec4)
-                            wgpu::VertexAttributeDescriptor {
+                            wgpu::VertexAttribute {
                                 format: wgpu::VertexFormat::Float4,
                                 offset: (2 * 4) + (2 * 4),
                                 shader_location: 3,
                             },
                             // color (vec4)
-                            wgpu::VertexAttributeDescriptor {
+                            wgpu::VertexAttribute {
                                 format: wgpu::VertexFormat::Float4,
                                 offset: (2 * 4) + (2 * 4) + (4 * 4),
                                 shader_location: 4,
@@ -639,10 +643,10 @@ mod gpu {
                 ],
             };
 
-            let vs_module = device.create_shader_module(wgpu::include_spirv!(
+            let vs_module = device.create_shader_module(&wgpu::include_spirv!(
                 "../../../resources/shaders/glyph.vert.spv"
             ));
-            let fs_module = device.create_shader_module(wgpu::include_spirv!(
+            let fs_module = device.create_shader_module(&wgpu::include_spirv!(
                 "../../../resources/shaders/glyph.frag.spv"
             ));
 
@@ -653,9 +657,12 @@ mod gpu {
                     module: &vs_module,
                     entry_point: "main",
                 },
-                fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+                fragment_stage: Some(wgpu::FragmentState {
                     module: &fs_module,
                     entry_point: "main",
+                    targets: &[
+                        format.into()
+                    ]
                 }),
                 rasterization_state: Some(wgpu::RasterizationStateDescriptor {
                     front_face: wgpu::FrontFace::Ccw,
@@ -743,7 +750,7 @@ mod gpu {
 
             rpass.set_pipeline(&self.pipeline);
             rpass.set_bind_group(0, &self.bind_group, &[]);
-            rpass.set_index_buffer(self.index_buffer.slice(..));
+            rpass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
             rpass.set_vertex_buffer(0, self.glyph_vertex_buffer.slice(..));
             rpass.set_vertex_buffer(1, self.instance_buffer.slice(..glyph_positions.len() as u64));
 

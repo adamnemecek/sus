@@ -50,7 +50,7 @@ impl GraphicsDevice {
             .expect("Failed to create device");
 
         let swap_chain_descriptor = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+            usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             format: swapchain_format,
             width: size.width,
             height: size.height,
@@ -203,19 +203,19 @@ impl TexturedQuad {
         });
 
         let vertex_state = wgpu::VertexStateDescriptor {
-            index_format: wgpu::IndexFormat::Uint16,
-            vertex_buffers: &[wgpu::VertexBufferDescriptor {
+            // index_format: wgpu::IndexFormat::Uint16,
+            vertex_buffers: &[wgpu::VertexBuffer {
                 stride: (std::mem::size_of::<TexturedQuadVertex>()) as wgpu::BufferAddress,
                 step_mode: wgpu::InputStepMode::Vertex,
                 attributes: &[
                     // Pos (vec2)
-                    wgpu::VertexAttributeDescriptor {
+                    wgpu::VertexAttribute {
                         format: wgpu::VertexFormat::Float2,
                         offset: 0,
                         shader_location: 0,
                     },
                     // UV (vec2)
-                    wgpu::VertexAttributeDescriptor {
+                    wgpu::VertexAttribute {
                         format: wgpu::VertexFormat::Float2,
                         offset: 2 * 4,
                         shader_location: 1,
@@ -224,10 +224,11 @@ impl TexturedQuad {
             }],
         };
 
+
         let vs_module = device
-            .create_shader_module(wgpu::include_spirv!("../../../resources/shaders/test.vert.spv"));
+            .create_shader_module(&wgpu::include_spirv!("../../../resources/shaders/test.vert.spv"));
         let fs_module = device
-            .create_shader_module(wgpu::include_spirv!("../../../resources/shaders/test.frag.spv"));
+            .create_shader_module(&wgpu::include_spirv!("../../../resources/shaders/test.frag.spv"));
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
@@ -267,6 +268,7 @@ impl TexturedQuad {
         let encoder = &mut frame_encoder.encoder;
 
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            label: None,
             color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                 attachment: &frame.view,
                 resolve_target: None,
@@ -277,7 +279,7 @@ impl TexturedQuad {
 
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.bind_group, &[]);
-        rpass.set_index_buffer(self.index_buf.slice(..));
+        rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint16,);
         rpass.set_vertex_buffer(0, self.vertex_buf.slice(..));
         rpass.draw_indexed(0..4 as u32, 0, 0..1);
     }
