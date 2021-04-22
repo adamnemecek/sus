@@ -242,7 +242,8 @@ impl TexturedQuad {
             "../../../resources/shaders/test.frag.spv"
         ));
 
-        let format = wgpu::TextureFormat::Bgra8Unorm;
+        // let format = wgpu::TextureFormat::Bgra8Unorm;
+        let format = graphics_device.swap_chain_descriptor().format;
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("mod"),
             layout: Some(&pipeline_layout),
