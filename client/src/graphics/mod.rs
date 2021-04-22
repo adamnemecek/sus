@@ -255,7 +255,16 @@ impl TexturedQuad {
             fragment: Some(wgpu::FragmentState {
                 module: &fs_module,
                 entry_point: "main",
-                targets: &[/*/ todo */ format.into()],
+                targets: &[wgpu::ColorTargetState {
+                    format,
+                    blend: Some(
+                        wgpu::BlendState {
+                            color: wgpu::BlendComponent::REPLACE,
+                            alpha: wgpu::BlendComponent::REPLACE,
+                        }
+                    ),
+                    write_mask: wgpu::ColorWrite::ALL,
+                }],
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleStrip,

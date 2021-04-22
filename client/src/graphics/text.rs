@@ -665,7 +665,7 @@ mod gpu {
                     // ],
                     attributes: &wgpu::vertex_attr_array![
                         0 => Float32x2,
-                    ]
+                    ],
                 },
                 wgpu::VertexBufferLayout {
                     array_stride: (std::mem::size_of::<GlyphInstanceData>()) as wgpu::BufferAddress,
