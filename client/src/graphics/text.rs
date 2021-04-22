@@ -688,7 +688,7 @@ mod gpu {
                         },
                         // color (vec4)
                         wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float32x2,
+                            format: wgpu::VertexFormat::Float32x4,
                             offset: (2 * 4) + (2 * 4) + (4 * 4),
                             shader_location: 4,
                         },
@@ -705,7 +705,7 @@ mod gpu {
 
             let format = wgpu::TextureFormat::Bgra8Unorm;
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                label: None,
+                label: Some("text"),
                 layout: Some(&pipeline_layout),
                 vertex: wgpu::VertexState {
                     module: &vs_module,
@@ -871,7 +871,7 @@ mod gpu {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Bgra8Unorm,
+                format: wgpu::TextureFormat::R8Unorm,
                 usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
             })
         }

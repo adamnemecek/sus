@@ -244,7 +244,7 @@ impl TexturedQuad {
 
         let format = wgpu::TextureFormat::Bgra8Unorm;
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
+            label: Some("mod"),
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &vs_module,
