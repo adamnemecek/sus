@@ -712,7 +712,8 @@ mod gpu {
                 "../../../resources/shaders/glyph.frag.spv"
             ));
 
-            let format = wgpu::TextureFormat::R8Unorm;
+            let format = graphics_device.swap_chain_descriptor().format;
+            // let format = wgpu::TextureFormat::Bgra8Unorm;
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("text"),
                 layout: Some(&pipeline_layout),
