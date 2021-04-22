@@ -720,7 +720,7 @@ mod gpu {
                 primitive: wgpu::PrimitiveState {
                     topology: wgpu::PrimitiveTopology::TriangleStrip,
                     front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: wgpu::CullMode::Front,
+                    cull_mode: Some(wgpu::Face::Front),
                     ..Default::default()
                 },
 
@@ -803,8 +803,8 @@ mod gpu {
 
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &frame.view,
+                color_attachments: &[wgpu::RenderPassColorAttachment {
+                    view: &frame.view,
                     resolve_target: None,
                     ops: wgpu::Operations { load: wgpu::LoadOp::Load, store: true },
                 }],
@@ -829,33 +829,39 @@ mod gpu {
             width: u32,
             height: u32,
         ) {
-            
-            let bitmap_texture_extent = wgpu::Extent3d { width, height, depth: 1 };
+            let bitmap_texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
             // println!("bitmap {:?}", bitmap.len());
             // println!("extent {:?}", bitmap_texture_extent);
-            println!("x {:?} y: {:?}", x,y );
+            println!("x {:?} y: {:?}", x, y);
             println!("width {:?}, height {:?}", width, height);
             println!("bitmap len {:?} size {:}", bitmap.len(), width * height);
             // bitmap len is 1134
-            // we are trying to copy 1215 
+            // we are trying to copy 1215
             // copy from bitmap to glyph texture
             // we are copying too many bytes
             // since the texture is 4k * 4k, the problem has to be here
             frame_encoder.queue().write_texture(
-                wgpu::TextureCopyView {
+                wgpu::ImageCopyTexture {
                     texture: &self.glyph_texture,
                     mip_level: 0,
                     origin: wgpu::Origin3d { x, y, z: 0 },
                 },
                 bitmap,
-                wgpu::TextureDataLayout { offset: 0, bytes_per_row: 1 * width, rows_per_image: 0 },
+                wgpu::ImageDataLayout {
+                    offset: 0,
+                    bytes_per_row: std::num::NonZeroU32::new(1 * width),
+                    rows_per_image: std::num::NonZeroU32::new(0),
+                },
                 bitmap_texture_extent,
             );
         }
 
         fn build_glyph_texture(graphics_device: &GraphicsDevice) -> Texture {
-            let glyph_texture_extent =
-                wgpu::Extent3d { width: BITMAP_WIDTH, height: BITMAP_HEIGHT, depth: 1 };
+            let glyph_texture_extent = wgpu::Extent3d {
+                width: BITMAP_WIDTH,
+                height: BITMAP_HEIGHT,
+                depth_or_array_layers: 1,
+            };
 
             let device = graphics_device.device();
 

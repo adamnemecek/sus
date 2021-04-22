@@ -210,8 +210,8 @@ impl TexturedQuad {
             step_mode: wgpu::InputStepMode::Vertex,
             attributes: &wgpu::vertex_attr_array![
                 // UV (vec2)
-                0 => Float2,
-                1 => Float2
+                0 => Float32x2,
+                1 => Float32x2
             ]
             // attributes: &[wgpu::VertexBuffer {
             //     attributes: &[
@@ -259,7 +259,7 @@ impl TexturedQuad {
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleStrip,
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::Front,
+                cull_mode: Some(wgpu::Face::Front),
                 ..Default::default()
             },
 
@@ -294,8 +294,8 @@ impl TexturedQuad {
 
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
-            color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                attachment: &frame.view,
+            color_attachments: &[wgpu::RenderPassColorAttachment {
+                view: &frame.view,
                 resolve_target: None,
                 ops: wgpu::Operations { load: wgpu::LoadOp::Clear(CORNFLOWER_BLUE), store: true },
             }],
