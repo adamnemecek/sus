@@ -118,7 +118,7 @@ struct TexturedQuadVertex {
 pub struct TexturedQuad {
     vertex_buf: Buffer,
     index_buf: Buffer,
-    bind_group: BindGroup,
+    // bind_group: BindGroup,
     pipeline: RenderPipeline,
 }
 
@@ -148,7 +148,7 @@ impl TexturedQuad {
         });
 
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: None,
+            label: Some("mod"),
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
@@ -185,24 +185,24 @@ impl TexturedQuad {
             push_constant_ranges: &[],
         });
 
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &bind_group_layout,
-            entries: &[
-                // wgpu::BindGroupEntry {
-                //     binding: 0,
-                //     resource: uniform_buf.as_entire_binding(),
-                // },
-                // wgpu::BindGroupEntry {
-                //     binding: 1,
-                //     resource: wgpu::BindingResource::TextureView(&texture_view),
-                // },
-                // wgpu::BindGroupEntry {
-                //     binding: 2,
-                //     resource: wgpu::BindingResource::Sampler(&sampler),
-                // },
-            ],
-            label: None,
-        });
+        // let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        //     layout: &bind_group_layout,
+        //     entries: &[
+        //         // wgpu::BindGroupEntry {
+        //         //     binding: 0,
+        //         //     resource: uniform_buf.as_entire_binding(),
+        //         // },
+        //         // wgpu::BindGroupEntry {
+        //         //     binding: 1,
+        //         //     resource: wgpu::BindingResource::TextureView(&texture_view),
+        //         // },
+        //         // wgpu::BindGroupEntry {
+        //         //     binding: 2,
+        //         //     resource: wgpu::BindingResource::Sampler(&sampler),
+        //         // },
+        //     ],
+        //     label: None,
+        // });
 
         let buffer_layout = wgpu::VertexBufferLayout {
             // index_format: wgpu::IndexFormat::Uint16,
@@ -242,7 +242,7 @@ impl TexturedQuad {
             "../../../resources/shaders/test.frag.spv"
         ));
 
-        let format = wgpu::TextureFormat::R8Unorm;
+        let format = wgpu::TextureFormat::Bgra8Unorm;
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
@@ -285,10 +285,10 @@ impl TexturedQuad {
             // alpha_to_coverage_enabled: false,
         });
 
-        Self { vertex_buf, index_buf, pipeline, bind_group }
+        Self { vertex_buf, index_buf, pipeline }
     }
 
-    pub fn render(&self, frame_encoder: &mut FrameEncoder) {
+    pub fn render(&self, bind_group: &wgpu::BindGroup, frame_encoder: &mut FrameEncoder) {
         let frame = &frame_encoder.frame;
         let encoder = &mut frame_encoder.encoder;
 
@@ -303,7 +303,8 @@ impl TexturedQuad {
         });
 
         rpass.set_pipeline(&self.pipeline);
-        rpass.set_bind_group(0, &self.bind_group, &[]);
+        // rpass.set_bind_group(0, &self.bind_group, &[]);
+        rpass.set_bind_group(0, bind_group, &[]);
         rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint16);
         rpass.set_vertex_buffer(0, self.vertex_buf.slice(..));
         rpass.draw_indexed(0..4 as u32, 0, 0..1);

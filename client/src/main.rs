@@ -172,7 +172,7 @@ async fn run() {
             Event::RedrawRequested(_window_id) => {
                 // Draw the scene
                 let mut frame_encoder = graphics_device.begin_frame();
-                textured_quad.render(&mut frame_encoder);
+                // textured_quad.render(&text_system.glyph_painter.bind_group, &mut frame_encoder);
                 text_system.render_horizontal(
                     TextAlignment {
                         x: AxisAlign::Start(10),
@@ -181,35 +181,35 @@ async fn run() {
                         max_height: None,
                     },
                     &[
-                        StyledText::default_styling("This is a test."),
-                        StyledText {
-                            text: "Another test, blue this time",
-                            font: Font::SpaceMono400(40),
-                            color: Color::new(0, 0, 255, 255),
-                        },
-                        StyledText {
-                            text: "\nTest with a line break, green.",
-                            font: Font::SpaceMono400(40),
-                            color: Color::new(0, 255, 0, 255),
-                        },
-                        StyledText {
-                            text: "Red test\nHere are some numbers:\n0123456789!@#$%^&*(){}[].",
-                            font: Font::SpaceMono400(40),
-                            color: Color::new(255, 0, 0, 255),
-                        },
-                        StyledText {
-                            text: "\nOpacity test, this should be half-faded white",
-                            font: Font::SpaceMono400(40),
-                            color: Color::new(255, 255, 255, 128),
-                        },
-                        StyledText {
-                            text: &format!(
-                                "\nServer addr: {}\nConnected: {}",
-                                server_addr, connected
-                            ),
-                            font: Font::SpaceMono400(40),
-                            color: Color::new(255, 255, 255, 255),
-                        },
+                        StyledText::default_styling("he"),
+                        // StyledText {
+                        //     text: "Another test, blue this time",
+                        //     font: Font::SpaceMono400(40),
+                        //     color: Color::new(0, 0, 255, 255),
+                        // },
+                        // StyledText {
+                        //     text: "\nTest with a line break, green.",
+                        //     font: Font::SpaceMono400(40),
+                        //     color: Color::new(0, 255, 0, 255),
+                        // },
+                        // StyledText {
+                        //     text: "Red test\nHere are some numbers:\n0123456789!@#$%^&*(){}[].",
+                        //     font: Font::SpaceMono400(40),
+                        //     color: Color::new(255, 0, 0, 255),
+                        // },
+                        // StyledText {
+                        //     text: "\nOpacity test, this should be half-faded white",
+                        //     font: Font::SpaceMono400(40),
+                        //     color: Color::new(255, 255, 255, 128),
+                        // },
+                        // StyledText {
+                        //     text: &format!(
+                        //         "\nServer addr: {}\nConnected: {}",
+                        //         server_addr, connected
+                        //     ),
+                        //     font: Font::SpaceMono400(40),
+                        //     color: Color::new(255, 255, 255, 255),
+                        // },
                     ],
                     &mut frame_encoder,
                     window.inner_size(),

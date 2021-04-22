@@ -242,7 +242,7 @@ pub struct TextSystem {
     layout: Layout<usize>,
 
     /// GPU glyph renderer.
-    glpyh_painter: GlyphPainter,
+    pub glyph_painter: GlyphPainter,
 }
 
 impl TextSystem {
@@ -260,9 +260,9 @@ impl TextSystem {
         let glyph_packer = Packer::new(packer_config);
         let layout = Layout::new(CoordinateSystem::PositiveYDown);
 
-        let glpyh_painter = GlyphPainter::new(graphics_device);
+        let glyph_painter = GlyphPainter::new(graphics_device);
 
-        Self { font_data, char_metadata, glyph_packer, layout, glpyh_painter }
+        Self { font_data, char_metadata, glyph_packer, layout, glyph_painter }
     }
 
     /// Rasterizes and caches this character in the glyph texture.
@@ -317,7 +317,7 @@ impl TextSystem {
 
                     entry.insert(char_metadata);
 
-                    self.glpyh_painter.write_to_texture(
+                    self.glyph_painter.write_to_texture(
                         frame_encoder,
                         &bitmap,
                         packed_rect.x as u32,
@@ -427,7 +427,7 @@ impl TextSystem {
 
         // TODO(bschwind) - Make an API for queueing up text to render, collect all
         // the output from fontdue, and then render it all at once to reduce GPU draw calls.
-        self.glpyh_painter.render(&position_data, frame_encoder, window_size);
+        self.glyph_painter.render(&position_data, frame_encoder, window_size);
     }
 }
 
@@ -507,7 +507,7 @@ mod gpu {
         index_buffer: Buffer,
         instance_buffer: Buffer,
         uniform_buffer: wgpu::Buffer,
-        bind_group: BindGroup,
+        pub bind_group: BindGroup,
         pipeline: RenderPipeline,
     }
 
@@ -523,7 +523,7 @@ mod gpu {
 
             let bind_group_layout =
                 device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                    label: None,
+                    label: Some("graphics"),
                     entries: &[
                         wgpu::BindGroupLayoutEntry {
                             binding: 0,
@@ -581,7 +581,7 @@ mod gpu {
                         resource: wgpu::BindingResource::Buffer {
                             buffer: &uniform_buffer,
                             offset: 0,
-                            size: wgpu::BufferSize::new(16),
+                            size: wgpu::BufferSize::new(64),
                         },
                     },
                     wgpu::BindGroupEntry {
@@ -658,7 +658,7 @@ mod gpu {
                     attributes: &[
                         // UV (vec2)
                         wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float2,
+                            format: wgpu::VertexFormat::Float32x2,
                             offset: 0,
                             shader_location: 0,
                         },
@@ -670,25 +670,25 @@ mod gpu {
                     attributes: &[
                         // pos (vec2)
                         wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float2,
+                            format: wgpu::VertexFormat::Float32x2,
                             offset: 0,
                             shader_location: 1,
                         },
                         // size (vec2)
                         wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float2,
+                            format: wgpu::VertexFormat::Float32x2,
                             offset: 2 * 4,
                             shader_location: 2,
                         },
                         // uv_extents (vec4)
                         wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float4,
+                            format: wgpu::VertexFormat::Float32x4,
                             offset: (2 * 4) + (2 * 4),
                             shader_location: 3,
                         },
                         // color (vec4)
                         wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float4,
+                            format: wgpu::VertexFormat::Float32x2,
                             offset: (2 * 4) + (2 * 4) + (4 * 4),
                             shader_location: 4,
                         },
@@ -703,7 +703,7 @@ mod gpu {
                 "../../../resources/shaders/glyph.frag.spv"
             ));
 
-            let format = wgpu::TextureFormat::R8Unorm;
+            let format = wgpu::TextureFormat::Bgra8Unorm;
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: None,
                 layout: Some(&pipeline_layout),
@@ -829,8 +829,18 @@ mod gpu {
             width: u32,
             height: u32,
         ) {
+            
             let bitmap_texture_extent = wgpu::Extent3d { width, height, depth: 1 };
-
+            // println!("bitmap {:?}", bitmap.len());
+            // println!("extent {:?}", bitmap_texture_extent);
+            println!("x {:?} y: {:?}", x,y );
+            println!("width {:?}, height {:?}", width, height);
+            println!("bitmap len {:?} size {:}", bitmap.len(), width * height);
+            // bitmap len is 1134
+            // we are trying to copy 1215 
+            // copy from bitmap to glyph texture
+            // we are copying too many bytes
+            // since the texture is 4k * 4k, the problem has to be here
             frame_encoder.queue().write_texture(
                 wgpu::TextureCopyView {
                     texture: &self.glyph_texture,
@@ -855,7 +865,7 @@ mod gpu {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::R8Unorm,
+                format: wgpu::TextureFormat::Bgra8Unorm,
                 usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
             })
         }
