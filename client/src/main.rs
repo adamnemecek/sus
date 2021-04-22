@@ -172,7 +172,7 @@ async fn run() {
             Event::RedrawRequested(_window_id) => {
                 // Draw the scene
                 let mut frame_encoder = graphics_device.begin_frame();
-                // textured_quad.render(&text_system.glyph_painter.bind_group, &mut frame_encoder);
+                textured_quad.render(&text_system.glyph_painter.bind_group, &mut frame_encoder);
                 text_system.render_horizontal(
                     TextAlignment {
                         x: AxisAlign::Start(10),

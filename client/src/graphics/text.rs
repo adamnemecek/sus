@@ -655,44 +655,53 @@ mod gpu {
                 wgpu::VertexBufferLayout {
                     array_stride: (std::mem::size_of::<GlyphQuadVertex>()) as wgpu::BufferAddress,
                     step_mode: wgpu::InputStepMode::Vertex,
-                    attributes: &[
-                        // UV (vec2)
-                        wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float32x2,
-                            offset: 0,
-                            shader_location: 0,
-                        },
-                    ],
+                    // attributes: &[
+                    //     // UV (vec2)
+                    //     wgpu::VertexAttribute {
+                    //         format: wgpu::VertexFormat::Float32x2,
+                    //         offset: 0,
+                    //         shader_location: 0,
+                    //     },
+                    // ],
+                    attributes: &wgpu::vertex_attr_array![
+                        0 => Float32x2,
+                    ]
                 },
                 wgpu::VertexBufferLayout {
                     array_stride: (std::mem::size_of::<GlyphInstanceData>()) as wgpu::BufferAddress,
                     step_mode: wgpu::InputStepMode::Instance,
-                    attributes: &[
-                        // pos (vec2)
-                        wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float32x2,
-                            offset: 0,
-                            shader_location: 1,
-                        },
-                        // size (vec2)
-                        wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float32x2,
-                            offset: 2 * 4,
-                            shader_location: 2,
-                        },
-                        // uv_extents (vec4)
-                        wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float32x4,
-                            offset: (2 * 4) + (2 * 4),
-                            shader_location: 3,
-                        },
-                        // color (vec4)
-                        wgpu::VertexAttribute {
-                            format: wgpu::VertexFormat::Float32x4,
-                            offset: (2 * 4) + (2 * 4) + (4 * 4),
-                            shader_location: 4,
-                        },
-                    ],
+                    attributes: &wgpu::vertex_attr_array![
+                        1 => Float32x2,
+                        2 => Float32x2,
+                        3 => Float32x4,
+                        4 => Float32x4,
+                    ]
+                    // attributes: &[
+                    //     // pos (vec2)
+                    //     wgpu::VertexAttribute {
+                    //         format: wgpu::VertexFormat::Float32x2,
+                    //         offset: 0,
+                    //         shader_location: 1,
+                    //     },
+                    //     // size (vec2)
+                    //     wgpu::VertexAttribute {
+                    //         format: wgpu::VertexFormat::Float32x2,
+                    //         offset: 2 * 4,
+                    //         shader_location: 2,
+                    //     },
+                    //     // uv_extents (vec4)
+                    //     wgpu::VertexAttribute {
+                    //         format: wgpu::VertexFormat::Float32x4,
+                    //         offset: (2 * 4) + (2 * 4),
+                    //         shader_location: 3,
+                    //     },
+                    //     // color (vec4)
+                    //     wgpu::VertexAttribute {
+                    //         format: wgpu::VertexFormat::Float32x4,
+                    //         offset: (2 * 4) + (2 * 4) + (4 * 4),
+                    //         shader_location: 4,
+                    //     },
+                    // ],
                 },
             ];
 
@@ -703,7 +712,7 @@ mod gpu {
                 "../../../resources/shaders/glyph.frag.spv"
             ));
 
-            let format = wgpu::TextureFormat::Bgra8Unorm;
+            let format = wgpu::TextureFormat::R8Unorm;
             let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("text"),
                 layout: Some(&pipeline_layout),
@@ -816,7 +825,6 @@ mod gpu {
             rpass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
             rpass.set_vertex_buffer(0, self.glyph_vertex_buffer.slice(..));
             rpass.set_vertex_buffer(1, self.instance_buffer.slice(..glyph_positions.len() as u64));
-
             rpass.draw_indexed(0..4 as u32, 0, 0..glyph_positions.len() as u32);
         }
 
