@@ -257,12 +257,10 @@ impl TexturedQuad {
                 entry_point: "main",
                 targets: &[wgpu::ColorTargetState {
                     format,
-                    blend: Some(
-                        wgpu::BlendState {
-                            color: wgpu::BlendComponent::REPLACE,
-                            alpha: wgpu::BlendComponent::REPLACE,
-                        }
-                    ),
+                    blend: Some(wgpu::BlendState {
+                        color: wgpu::BlendComponent::REPLACE,
+                        alpha: wgpu::BlendComponent::REPLACE,
+                    }),
                     write_mask: wgpu::ColorWrite::ALL,
                 }],
             }),

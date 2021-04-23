@@ -181,7 +181,7 @@ async fn run() {
                         max_height: None,
                     },
                     &[
-                        StyledText::default_styling("he"),
+                        StyledText::default_styling("hello"),
                         // StyledText {
                         //     text: "Another test, blue this time",
                         //     font: Font::SpaceMono400(40),

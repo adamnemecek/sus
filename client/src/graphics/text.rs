@@ -825,7 +825,11 @@ mod gpu {
             rpass.set_bind_group(0, &self.bind_group, &[]);
             rpass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
             rpass.set_vertex_buffer(0, self.glyph_vertex_buffer.slice(..));
-            rpass.set_vertex_buffer(1, self.instance_buffer.slice(..glyph_positions.len() as u64));
+            rpass.set_vertex_buffer(
+                1,
+                self.instance_buffer
+                    .slice(..(glyph_positions.len() * std::mem::size_of::<PositionedGlyph>()) as u64),
+            );
             rpass.draw_indexed(0..4 as u32, 0, 0..glyph_positions.len() as u32);
         }
 
